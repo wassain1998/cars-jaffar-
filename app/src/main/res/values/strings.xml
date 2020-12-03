@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">جعفر محمد الاغا2</string>
+    <string name="details_et_model_hint">Details</string>
+    <string name="details_et_color_hint">Color</string>
+    <string name="details_et_dpl_hint">Distance per Letter</string>
+    <string name="details_et_description_hint">Description</string>
+</resources>
