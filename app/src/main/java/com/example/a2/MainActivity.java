@@ -1,22 +1,33 @@
 package com.example.a2;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 //import android.widget.SearchView;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
+import android.view.MenuInflater;
+import android.view.LayoutInflater;
 //import android.widget.SearchView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import android.view.ContextMenu;
 
 
 public  class  MainActivity extends AppCompatActivity {
@@ -25,12 +36,16 @@ public  class  MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private Toolbar toolbar;
 
+
+
+
     private   CarRVAdapter adapter;//نجلب كلاس ال CarRvAdapter ونعمل له انفلات
     private   DatabaseAccess db;
 
     private static final int ADD_CAR_REQ_CODE = 1;
     private static final int EDIT_CAR_REQ_CODE = 1;
     public static final String CAR_KEY = "car_key";
+    private static final  int PERMISSION_REQ_CODE = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +53,27 @@ public  class  MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
+        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+        View theInflatedView = inflater.inflate(R.layout.custom_car_layout, null);
+        setContentView(theInflatedView);
+        registerForContextMenu(theInflatedView);
+
+
+
+        //كود الحصول على الصلاحية
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQ_CODE);
+        }
+
+
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
+
+
+       //  rc = findViewById(R.id.main_rv);
+
+
+
 
         rv = findViewById(R.id.main_rv);
         fab = findViewById(R.id.main_fb);
@@ -84,24 +118,42 @@ public  class  MainActivity extends AppCompatActivity {
             //يتم استدعائها عندما المستخدم يضغط ال Submit
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Toast.makeText(MainActivity.this, "Submit clicked",Toast.LENGTH_SHORT).show();
+                //كود البحث
+                //يتم البحث عندما المستخدم يضغط على زر Submit
+                db.open();
+                ArrayList<Car> cars = db.getCars(query);//البحث حسب النص الموجود في ال car الواحدة وليس كل ال cars اذ نلاحظ اننا كتبنا getCars وليس getAllCars
+                db.close();
+                adapter.setCars(cars);//بعدها اذهب للادبتر سيت كارز واعطيه اللستة التي اسمها cars
+                adapter.notifyDataSetChanged();//حدث لي كل اللستة
                 return false;
             }
             //يتم استدعائها عندما المستخدم يغير النص في الاستعلام
             @Override
             public boolean onQueryTextChange(String newText) {
-                Toast.makeText(MainActivity.this, "text changed",Toast.LENGTH_SHORT).show();
+                //كود البحث
+             //يتم البحث خلال ما المستخدم يكتب
+                db.open();
+                ArrayList<Car> cars = db.getCars(newText);//البحث حسب النص الموجود في ال car الواحدة وليس كل ال cars اذ نلاحظ اننا كتبنا getCars وليس getAllCars
+                db.close();
+                adapter.setCars(cars);//بعدها اذهب للادبتر سيت كارز واعطيه اللستة التي اسمها cars
+                adapter.notifyDataSetChanged();//حدث لي كل اللستة
+
                 return false;
             }
 
         });
 
-
         //يتم استدعاء هذه الدالة عندما نضط على زر X اي حذف النص واغلاق البحث
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                Toast.makeText(MainActivity.this, "search finched",Toast.LENGTH_SHORT).show();
+                //كود البحث
+                // يتم حذف الكتابة والعودة الى القائمة بعد ما المستخدم يبحث
+                db.open();
+                ArrayList<Car> cars = db.getAllCars();//عندما تضغط على زر ال x جيب كل السيارات او العناصر واعرضهم على الشاشة
+                db.close();
+                adapter.setCars(cars);//بعدها اذهب للادبتر سيت كارز واعطيه اللستة التي اسمها cars
+                adapter.notifyDataSetChanged();//حدث لي كل اللستة
                 return false;
             }
         });
@@ -116,8 +168,69 @@ public  class  MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==ADD_CAR_REQ_CODE){
 
+            db.open();
+            ArrayList<Car> cars = db.getAllCars();
+            db.close();
+            adapter.setCars(cars);
+            adapter.notifyDataSetChanged();//عمل تحديث ل اللستة كلها
+          //  adapter.notifyItemChanged();//item تحديث عنصر واحد فقط او كما معروف ب
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case PERMISSION_REQ_CODE:
+                if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                    //تم الحصول على الصلاحية
+                }
+
+                else {
+
+                }
+
+        }
+    }
+
+
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu,menu);
+
+    }
+
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.details_menu_save:
+                Toast.makeText(this, "save item", Toast.LENGTH_LONG ).show();
+                return true;
+
+            case R.id.details_menu_edit:
+                Toast.makeText(this, "edit item", Toast.LENGTH_LONG ).show();
+                return true;
+
+
+            case R.id.details_menu_delete:
+                Toast.makeText(this, "delet item", Toast.LENGTH_LONG ).show();
+                return true;
+
+
+        }
+        return false;
+    }
 }//القوس الاخير
+
+
 
 
 

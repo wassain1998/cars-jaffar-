@@ -23,7 +23,7 @@ public class MyDatabase extends SQLiteAssetHelper {
     public  static final String CAR_CLN_MODEL = "model";
     public  static final String CAR_CLN_COLOR = "color";
     public  static final String CAR_CLN_DPL = "distancePerLetter";
-    public  static final String CAR_CLN_IMAGE = "image";
+    public  static final String CAR_CLN_IMAGE = "imge";
     public  static final String CAR_CLN_DESCRIPTION = "description";
 
     public MyDatabase (Context context) {

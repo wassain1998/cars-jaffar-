@@ -132,8 +132,8 @@ public class DatabaseAccess  {
                 String model = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_MODEL));
                 String color = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_COLOR));
                 double dbl   = cursor.getDouble(cursor.getColumnIndex(MyDatabase.CAR_CLN_DPL));
-            //    String image = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_IMAGE));هذا السطر يوجد فيه خطأ غير معلوم لذلك بدلناه بالسطر الذي تحته
-                String image = cursor.getString(4);//هذا السطر بديل للسطر الاعلى بسبب خطأ مجهول وان الرقم 4 هو تسلسل السطر من السطر الاول يحمل الرقم 0 الى هذا السطر
+               String image = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_IMAGE));//هذا السطر يوجد فيه خطأ غير معلوم لذلك بدلناه بالسطر الذي تحته
+             //   String image = cursor.getString(4);//هذا السطر بديل للسطر الاعلى بسبب خطأ مجهول وان الرقم 4 هو تسلسل السطر من السطر الاول يحمل الرقم 0 الى هذا السطر
                 String description = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_DESCRIPTION));
 
                 Car c = new Car(id,model,color,dbl,image,description);
@@ -182,18 +182,22 @@ public class DatabaseAccess  {
     //فديو 257 دقيقة 3:03
     public Car getCar(int carId){
         ArrayList<Car> cars = new ArrayList<>();
-        Cursor cursor =   database.rawQuery( "SELECT *  FROM "+MyDatabase.CAR_TB_NAME+"WHERW "+MyDatabase.CAR_CLN_ID+"=?",new String[]{String.valueOf(carId)});
+        String[] Items={MyDatabase.CAR_CLN_ID,MyDatabase.CAR_CLN_MODEL,MyDatabase.CAR_CLN_COLOR,MyDatabase.CAR_CLN_DPL,MyDatabase.CAR_CLN_IMAGE,MyDatabase.CAR_CLN_DESCRIPTION};
+        String[] ID={carId+""};
+        Cursor cursor=database.query(MyDatabase.CAR_TB_NAME,Items,MyDatabase.CAR_CLN_ID+" =?",ID,null,null,null);
+      //  Cursor cursor =   database.rawQuery( "SELECT *  FROM "+MyDatabase.CAR_TB_NAME+"WHERW "+MyDatabase.CAR_CLN_ID+"=?",new String[]{String.valueOf(carId)});
         if(cursor != null && cursor.moveToFirst()){
 
                 int id = cursor.getInt(cursor.getColumnIndex(MyDatabase.CAR_CLN_ID));
                 String model = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_MODEL));
                 String color = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_COLOR));
                 double dbl   = cursor.getDouble(cursor.getColumnIndex(MyDatabase.CAR_CLN_DPL));
-                //    String image = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_IMAGE));هذا السطر يوجد فيه خطأ غير معلوم لذلك بدلناه بالسطر الذي تحته
-                String image = cursor.getString(4);//هذا السطر بديل للسطر الاعلى بسبب خطأ مجهول وان الرقم 4 هو تسلسل السطر من السطر الاول يحمل الرقم 0 الى هذا السطر
+                String image = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_IMAGE));
+                //String image = cursor.getString(4);//هذا السطر بديل للسطر الاعلى بسبب خطأ مجهول وان الرقم 4 هو تسلسل السطر من السطر الاول يحمل الرقم 0 الى هذا السطر
                 String description = cursor.getString(cursor.getColumnIndex(MyDatabase.CAR_CLN_DESCRIPTION));
 
                 Car c = new Car(id,model,color,dbl,image,description);
+                cars.add(c);
             cursor.close();
             return c;
         }

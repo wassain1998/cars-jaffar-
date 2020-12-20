@@ -6,6 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardElevation="@dimen/custom_card_elevation"
     app:cardCornerRadius="@dimen/custom_card_CornerRadius"
+    android:id="@+id/card_lay"
     app:cardUseCompatPadding="true">
 
 
@@ -15,10 +16,11 @@
         android:orientation="vertical">
         <ImageView
             android:id="@+id/custom_car_iv"
+            android:scaleType="centerCrop"
             android:layout_width="match_parent"
             android:layout_height="@dimen/custom_car_iv_heght"
-            android:src="@drawable/city2"
-            android:scaleType="center"/>
+            android:src="@drawable/city1"
+           />
 
         <TextView
             android:id="@+id/custom_car_tv_model"
